@@ -18,28 +18,16 @@ public class Main {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
-        //объявляем нулевой массив игроков (Человек плюс компьютеры)
-        Field[] players = new Field[0];
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        //приветствие.
+        System.out.println("Приветствую! Это Морской Бой с произвольным количеством игроков");
         //предлагаем выбрать количество сопреников
-        System.out.println("Введите количество соперников (пока от 1 до 10):");
-        //временная переменная для определения количества соперников
-        int countEnemys = 0;
-        //создаем массив в зависимости от выбора количества соперников
-        do {
-            try {
-                countEnemys = Integer.parseInt(reader.readLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Нужно ввести цифры!");
-            }
-            if (countEnemys >= 1 && countEnemys <= 10) {
-                players = new Field[countEnemys + 1];
-            } else {
-                System.out.println("Нужно ввести цифрs от 1 до 10");
-            }
-        } while (!(countEnemys >= 1 && countEnemys <= 10));
+        System.out.println("Для начала определите количество соперников (пока от 1 до 10):");
+        //выбор игрока получаем через метод
+        int countEnemys = choiceFromRangeNumbers(1,10);
+        //создаем массив игроков (на 1 больше количества соперников, так как Игрок)
+        Field[] players = new Field[countEnemys + 1];
 
         //создаем объект "поле" для игрока (всегда первое поле)
         players[0] = new Field("Игрок");
@@ -50,7 +38,7 @@ public class Main {
             players[i] = new Field(name);
         }
 
-        //рисуем пустые поля
+        //выводим пустые поля
         Field.print(players);
 
         //инструкция к игре 1
@@ -62,7 +50,7 @@ public class Main {
             fillFieldPC(players[i]);
         }
 
-        //players[0] расставляет свои корабли!
+        //Игрок расставляет свои корабли!
         fillFieldUser(players[0]);
 
         //выводим на экран все игровые поля
@@ -75,17 +63,18 @@ public class Main {
         System.out.println("Обратите внимание, что любой выстрел, осуществляется СРАЗУ ПО ВСЕМ ПОЛЯМ ПРОТИВНИКОВ!");
         System.out.print("Итак, Ваш ход: ");
 
+        //ПРОЦЕСС ИГРЫ////////////////////////////////////////////////////////////////////////////////////////
 
-        //процесс игры
         //вводим логический тригер для включения цикла игры
         boolean canGame = true;
 
         //условие окончания игры - подбиты все корабли у всех игроков, кроме одного
         while (canGame) {
 
-            //если у любого игрока еще есть корабли, то он может ходить
-            //таким образом мы будем продолжать играть, даже если один игрок закончит игру
+            //цикл по массиву игроков, так как каждый ходит по очереди
             for (int i = 0; i < players.length; i++) {
+                //если у любого игрока еще есть корабли, то он может ходить
+                //таким образом мы будем продолжать играть, даже если один игрок закончит игру
                 //чтобы зайти в метод выстрела пользователя
                 if (i == 0) {
                     //если игрок имеет еще корабли, то он может стрелять
@@ -106,7 +95,7 @@ public class Main {
             //определяем возможность продолжения игры (цикла)
             //вводим переменную для подсчета выбывших учатсников
             int countLooser = 0;
-            //проходим по массиво игроков и считаем количество нулевых кораблей
+            //проходим по массиву игроков и считаем количество нулевых кораблей
             for (Field player : players) {
                 //если у данного игрока нет кораблей, то добавляем его в количество проигравших
                 if (player.ships.size() == 0) {
@@ -119,21 +108,23 @@ public class Main {
             }
 
             //если Игрок еще в игре, то выводим текущее состояние полей, т.о. мы не будем рисовать поля,
-            // когда два ПК доигрывают между собой
+            // когда ПК доигрывают между собой
             if (players[0].ships.size() != 0) {
                 Field.print(players);
-                //вывод количества кораблей у игроков
+                //вывод количества кораблей у игроков, чтобы видеть текующую ситуацию
                 for (Field field : players) {
                     System.out.println("У " + field.name + " осталось кораблей: " + field.ships.size());
-//                    System.out.println("Доступные ходы для: " + field.name + ":" + field.availableSteps);
+//тестовый вывод
+//                  System.out.println("Доступные ходы для: " + field.name + ":" + field.availableSteps);
                 }
 
-                //и поскольку ход снова перешел к игроку, то предлагаем снова сделать выстрел
+                //и поскольку Игрок еще в игре, а ход снова перешел к нему, то предлагаем снова сделать выстрел
                 System.out.print("И снова ваш ход: ");
             }
             //и цикл запускается заново, если countLooser не говорит, что остался всего один игрок
         }
 
+        //пустая строка для красоты и так как предыдущий вывод без перехода на новую строку
         System.out.println();
         //если цикл прервался, то значит кто-то победил, поэтому делаем завершение программы
         //выводим итоговое состояние полей, чтобы было видно попадания во все корабли проигравших
@@ -367,34 +358,16 @@ public class Main {
     }
 
     //Метод для расстановки кораблей игроком. В метод передаем поле игрока, которое изменяется методом
-    private static void fillFieldUser(Field fieldUser) throws IOException {
+    private static void fillFieldUser(Field fieldUser) {
         //инструкция Расстановка.1
-        System.out.println("Выбор расстановки: введите \"1\", если будете расставлять корабли самостоятельно, или \"2\", " +
-                "для выбора случайной авторасстановки");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Выбор расстановки: введите \"1\", если будете расставлять корабли самостоятельно, " +
+                "или \"2\", для выбора случайной авторасстановки");
 
         //переменная типа расстановки (1 - ручная, 2 - авто)
-        int typeFillField = 0;
-        //вводим логическую переменную, определяющую тип расстановки true - ручная (1), а false - авто (2).
-        // По умолчанию стоит автозаполнение, которое изменится, если пользователь выберет 2 тип
-        boolean choiceUser;
+        int typeFillField = choiceFromRangeNumbers(1, 2);
 
-        //в цикле делаем считывание, чтобы игрок ввел только заданные значения
-        do {
-            try {
-                typeFillField = Integer.parseInt(reader.readLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Нужно ввести цифры!");
-            }
-            if (typeFillField == 1) {
-                choiceUser = true;
-            } else if (typeFillField == 2) {
-                choiceUser = false;
-            } else {
-                choiceUser = false;
-                System.out.println("Нужно ввести только либо цифру 1, либо цифру 2");
-            }
-        } while ((typeFillField != 1) & (typeFillField != 2));
+        //вводим логическую переменную, определяющую тип расстановки true - ручная (1), а false - авто (2).
+        boolean choiceUser = typeFillField == 1;
 
         //если выбран ручной тип (введена "1")
         if (choiceUser) {
@@ -426,11 +399,9 @@ public class Main {
             }
         //иначе выбран тип автозаполнения (введена "2")
         } else {
-            //переменная для повтора автозаполнения
-            int replayAutoFill = 0;
-            //переключатель для повторного автозаполнения
-            boolean isOK= false;
-            //делаем в цикле, так как нужна возможность переиграть, если игроку не погравилась расстановка
+            //делаем в цикле, так как нужна возможность переиграть, если игроку не понравилась расстановка
+            //вводим тригер выхода из цикла
+            boolean isOK;
             do {
                 //автозаполнение поля игрока
                 fillFieldPC(fieldUser);
@@ -445,31 +416,21 @@ public class Main {
                 //вывод полученного поля
                 Field.print(fieldUser);
                 System.out.println("Вас устраивает данная расстановка?");
-                System.out.println("Если да - введите цифру 1 и продолжим игру, если нет - цифру 2 " +
-                        "и сделаем автозаполнение заново");
-                do {
-                    try {
-                        replayAutoFill = Integer.parseInt(reader.readLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Нужно ввести цифры!");
-                    }
-                    if (replayAutoFill == 1) {
-                        isOK = false;
-                    } else if (replayAutoFill == 2) {
-                        isOK = true;
-                        for (int i = 0; i < 10; i++) {
-                            for (int j = 0; j < 10; j++) {
-                                if (fieldUser.cells[i][j].getStatus() == 2) {
-                                    fieldUser.cells[i][j].setStatus(1);
-                                    fieldUser.cells[i][j].visible = false;
-                                }
+                System.out.println("Если да - введите цифру 1 и продолжим игру, если нет - цифру 2 " + "и сделаем автозаполнение заново");
+                //определяем тригер выхода из цикла через метод с проверкой вводимых значений
+                isOK = choiceFromRangeNumbers(1, 2) == 1;
+                //если пользователь ввел 2, то есть НЕдоволен расстановкой, то обнуляаем результаты расстановки
+                if (!isOK) {
+                    for (int i = 0; i < 10; i++) {
+                        for (int j = 0; j < 10; j++) {
+                            if (fieldUser.cells[i][j].getStatus() == 2) {
+                                fieldUser.cells[i][j].setStatus(1);
+                                fieldUser.cells[i][j].visible = false;
                             }
                         }
-                        fieldUser.delFromShipsAll(fieldUser);
-                    } else {
-                        System.out.println("Нужно ввести только либо цифру 1, либо цифру 2");
                     }
-                } while ((replayAutoFill != 1) & (replayAutoFill != 2));
+                    fieldUser.delFromShipsAll(fieldUser);
+                }
             } while (isOK);
         }
     }
@@ -494,12 +455,17 @@ public class Main {
     }
 
     //метод, считывающий человеческую координату и переводящий ее в индексы массива клеток с проверкой правильности
-    private static Pair<Integer,Integer> readUserStep() throws IOException {
+    private static Pair<Integer,Integer> readUserStep() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         //цикл нужен для того, чтобы добиться от игрока правильного ввода
         while (true) {
             //считываем введенную строку и делаем маленькие буквы на всякий случай, если игрок забыл
-            String coordinate = bufferedReader.readLine().toLowerCase();
+            String coordinate = null;
+            try {
+                coordinate = bufferedReader.readLine().toLowerCase();
+            } catch (IOException e) {
+                System.out.println("Что-то пошло не так при вводе с клавиатуры");;
+            }
             //проверяем, допустимое ли значение ввел игрок
             if (Field.allCoordinates.contains(coordinate)) {
                 return Field.translateTable.get(coordinate);
@@ -508,5 +474,27 @@ public class Main {
                 System.out.println("Некорректная координата. Введите, пожалуйста, заново");
             }
         }
+    }
+    //метод выбора пользователем из диапазона цифр. Границы включаются.
+    private static int choiceFromRangeNumbers (int beginInterval, int endInterval) {
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        //переменная, которую вернем в качестве выбора пользователя
+        int choiceValue = 0;
+        //помещаем выбор в цикл, чтобы добиться выбора согласно условиям
+        do {
+            try {
+                choiceValue = Integer.parseInt(reader.readLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Нужно ввести цифры!");
+            } catch (IOException e) {
+                System.out.println("Что-то пошло не так при вводе :(");
+            }
+            if (!(choiceValue >= beginInterval && choiceValue <= endInterval)) {
+                System.out.printf("Нужно ввести цифры от %d до %d", beginInterval, endInterval);
+            }
+        } while (!(choiceValue >= beginInterval && choiceValue <= endInterval));
+    return choiceValue;
     }
 }
