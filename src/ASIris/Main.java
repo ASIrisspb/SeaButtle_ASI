@@ -10,10 +10,14 @@ package ASIris;
     VersionConsole 4.20200619: замена блоков выбора пользователя методом,
                                 приведение методов стрельбы к единому виду
     VersionConsole 4.20200621: подтверждение пользователя при выстреле туда же или в пустоту
+    VersionConsole 4.20200628: создание метода для ПК, расставляющего нормальные корабли
+    VersionConsole 4.20200701: доделан метод расстановки нормальных кораблей для компьютера
  */
 
 import javafx.util.Pair;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
     //переменная (статическая для того, чтобы была доступна везде в теле метода мэйн), хранящая ход игрока
@@ -68,6 +72,10 @@ public class Main {
 
         //ПРОЦЕСС ИГРЫ////////////////////////////////////////////////////////////////////////////////////////
 
+
+        //счетчик ходов
+        int countOfSteps = 1;
+
         //вводим логический тригер для включения цикла игры
         boolean canGame = true;
         //вводим переменную для подсчета выбывших учатсников
@@ -75,6 +83,9 @@ public class Main {
 
         //условие окончания игры - подбиты все корабли у всех игроков, кроме одного
         while (canGame) {
+
+            //вывод номера хода
+            System.out.println("Ход номер: " + countOfSteps);
 
             //цикл по массиву игроков, так как каждый ходит по очереди
             for (int i = 0; i < players.length; i++) {
@@ -113,6 +124,10 @@ public class Main {
                 System.out.print("И снова ваш ход: ");
             }
             //и цикл запускается заново, если countLooser не говорит, что остался всего один игрок
+
+            //плюсуем счетчик
+            System.out.println();
+            countOfSteps++;
         }
 
         //ОСНОВНОЙ ЦИКЛ ИГРЫ ЗАКОНЧЕН ////////////////////////////////////////////////////////////////////////////////////////
@@ -156,53 +171,53 @@ public class Main {
 
         do {
             //ветка для хода человека
-            if (positionPlayer == 0) {
-                //тригер цикла, когда игрок должен подтвердить свой выстрел
-                boolean wantShoot = true;
-                //делаем цикл, чтобы человек мог менять свой ход несколько раз
-                while (wantShoot){
-                    //считываем ход человека методом
-                    step = readUserStep();
-                    //счетчик уже сделаных попаданий
-                    int alreadyHit = 0;
-                    //счетчик уже сделаных промахов
-                    int alreadyMiss = 0;
-                    //делаем предварительную проверку на ошибочный выстрел
-                    for (int i = 1; i < players.length ; i++) {
-                        //если в каком-то поле уже есть подбитый корабль по этой координате
-                        if (players[i].cells[step.getKey()][step.getValue()].getStatus() == 3) {
-                            //увеличиваем счетчик
-                            alreadyHit++;
-                        }
-                        //если в каком-то поле уже есть промах корабль по этой координате
-                        if (players[i].cells[step.getKey()][step.getValue()].getStatus() == 4) {
-                            //увеличиваем счетчик
-                            alreadyMiss++;
-                        }
-                    }
-                    //если во всех полях по данному выстрелу уже стоят попадания (больше относится к игре вдвоем)
-                    if (alreadyHit == players.length - 1) {
-                        //предупреждаем и просим подтвердить выстрел
-                        System.out.println("Этот выстрел уже привел к попаданию и не даст результата. " +
-                                "Вы действительно хотите так выстрелить? (введите 1, если да, и 2 - если нет)");
-                        wantShoot = choiceFromRangeNumbers(1,2) == 2;
-                        System.out.println("Введите ваш новый ход:");
-                    }
-                    //если во всех полях по данному выстрелу уже стоят промахи (больше относится к игре вдвоем)
-                    else if (alreadyMiss == players.length - 1) {
-                        //предупреждаем и просим подтвердить выстрел
-                        System.out.println("Этот выстрел не приведет к результату (очевидная пустая клетка). " +
-                                "Вы действительно хотите так выстрелить? (введите 1, если да, и 2 - если нет)");
-                        wantShoot = choiceFromRangeNumbers(1,2) == 2;
-                        System.out.println("Введите ваш новый ход:");
-                    //если не зашли в первые две ветки, значит нужно выйти из цикла
-                    } else  {
-                        wantShoot = false;
-                    }
-                }
-
-                //иначе делает ход компьютер
-            } else {
+//            if (positionPlayer == 0) {
+//                //тригер цикла, когда игрок должен подтвердить свой выстрел
+//                boolean wantShoot = true;
+//                //делаем цикл, чтобы человек мог менять свой ход несколько раз
+//                while (wantShoot){
+//                    //считываем ход человека методом
+//                    step = readUserStep();
+//                    //счетчик уже сделаных попаданий
+//                    int alreadyHit = 0;
+//                    //счетчик уже сделаных промахов
+//                    int alreadyMiss = 0;
+//                    //делаем предварительную проверку на ошибочный выстрел
+//                    for (int i = 1; i < players.length ; i++) {
+//                        //если в каком-то поле уже есть подбитый корабль по этой координате
+//                        if (players[i].cells[step.getKey()][step.getValue()].getStatus() == 3) {
+//                            //увеличиваем счетчик
+//                            alreadyHit++;
+//                        }
+//                        //если в каком-то поле уже есть промах корабль по этой координате
+//                        if (players[i].cells[step.getKey()][step.getValue()].getStatus() == 4) {
+//                            //увеличиваем счетчик
+//                            alreadyMiss++;
+//                        }
+//                    }
+//                    //если во всех полях по данному выстрелу уже стоят попадания (больше относится к игре вдвоем)
+//                    if (alreadyHit == players.length - 1) {
+//                        //предупреждаем и просим подтвердить выстрел
+//                        System.out.println("Этот выстрел уже привел к попаданию и не даст результата. " +
+//                                "Вы действительно хотите так выстрелить? (введите 1, если да, и 2 - если нет)");
+//                        wantShoot = choiceFromRangeNumbers(1,2) == 2;
+//                        System.out.println("Введите ваш новый ход:");
+//                    }
+//                    //если во всех полях по данному выстрелу уже стоят промахи (больше относится к игре вдвоем)
+//                    else if (alreadyMiss == players.length - 1) {
+//                        //предупреждаем и просим подтвердить выстрел
+//                        System.out.println("Этот выстрел не приведет к результату (очевидная пустая клетка). " +
+//                                "Вы действительно хотите так выстрелить? (введите 1, если да, и 2 - если нет)");
+//                        wantShoot = choiceFromRangeNumbers(1,2) == 2;
+//                        System.out.println("Введите ваш новый ход:");
+//                    //если не зашли в первые две ветки, значит нужно выйти из цикла
+//                    } else  {
+//                        wantShoot = false;
+//                    }
+//                }
+//
+            //иначе делает ход компьютер
+//            } else {
                 //координаты выстрела выбираем из поля, в котором осталось больше кораблей
                 //переменная для определения максимального значения кораблей у игроков
                 int countOfShips = 0;
@@ -227,7 +242,10 @@ public class Main {
                 step = players[choiceIndex].availableSteps.get(randomCoordinate);
                 //выводим ход ПК
                 System.out.println(nameShooter + " сделал такой ход: " + translateToHumanIndex(step));
-            }
+//            }
+
+            //после того, как определились с самим выстрелом,
+
             //получаем результат выстрела по полям противников
             //предварительно обнуляем переменную индексации логических переменных
             indexOfShootable = 0;
@@ -257,6 +275,7 @@ public class Main {
             if (positionPlayer == 0) {
                 //и при этом он еще может стрелять (попал!), то выводим поля противников
                 if (canShoot) Field.print("Без игрока", players);
+                System.out.println("И снова ваш ход:");
             }
         } while (canShoot);
         //если мы вышли из цикла, то метод закончил свою работу
@@ -343,22 +362,173 @@ public class Main {
 
     //Метод для расстановки кораблей ПК. В метод передаем поле ПК, которое изменяется методом
     private static void fillFieldPC(Field fieldPC) {
-        //делаем в цикле, так как нужно расставить 10 кораблей
-        while (fieldPC.ships.size() < 10) {
-            //случайное число от 0 до 99, которое позовлит случайно получить координату из списка "человечески" координат
-            int randomCoordinate = (int)(Math.random()*99);
-            //получаем пару (координаты) путем перевода из "человеческого" вида в индексы массива клеток
-            step = Field.translateTable.get(Field.allCoordinates.get(randomCoordinate));
-            //проверяем допустима ли данная координата с учетом уже расставленных
-            if (isValidCoordinate(step,fieldPC)) {
-                //если да, то добавляем координату в список кораблей и меняем статус клетки на обозначение корабля
-                fieldPC.ships.add(step);
-                fieldPC.cells[step.getKey()][step.getValue()].setStatus(2);
+        //делаем в цикле, так как нужно расставить 10 кораблей (в сумме 20 клеток)
+        while (fieldPC.ships.size() < 20) {
+            //максимальное количество палуб
+            int countOfdecks = 4;
+            //массив кораблей -----  (ПОКА НИ НА ЧТО НЕ ВЛИЯЕТ И НЕ ИСПОЛЬЗУЕТСЯ)
+            Ship[] ships = new Ship[10];
+            //счетчик для массива корабелй
+            int k = 0;
+            //цикл для создания нужного количества кораблей
+            //идем от самого большого
+            for (int i = countOfdecks; i > 0; i--) {
+                //так чтобы количество палуб уменьшалось, а количество кораблей увеличивалось
+                for (int j = i - 1; j < countOfdecks; j++) {
+                    //создаем экземпляр корабля с заданным количеством палуб
+                    ships[k] = new Ship(i);
+                    //размещаем его на поле через метод
+                    postingShip(ships[k], fieldPC);
+                    //увеличиваем счетчик
+                    k++;
+                }
             }
         }
     }
 
-    //Метод для расстановки кораблей игроком. В метод передаем поле игрока, которое изменяется методом
+//////////РАЗМЕЩЕНИЕ КОРАБЛЯ
+    private static void postingShip(Ship ship, Field fieldPC) {
+
+        //массив кораблей для конечного выбора
+        ArrayList<Ship> possibleShips = new ArrayList<>();
+
+        //логический тригер цикла. Делаем ИСТИНА, чтобы зайти в цикл
+        boolean isPossiblePosition = true;
+
+        //МАССИВ ЛОГИЧЕСКИХ ПЕРЕМЕННЫХ
+        boolean nord = true, west=true, east=true,south=true;
+
+        //цикл, чтобы добиться допустимого размещения корабля
+        while (isPossiblePosition) {
+
+            //обнуляем логические тригеры, чтобы избежать зацикливания
+            nord = true;
+            west = true;
+            east = true;
+            south = true;
+
+            //случайное число от 0 до 99, которое позовлит случайно получить координату из списка "человечески" координат
+            int randomCoordinate = (int) (Math.random() * (fieldPC.availableSteps.size() - 1));
+            //получаем пару (координаты) путем перевода из "человеческого" вида в индексы массива клеток
+            step = Field.translateTable.get(Field.allCoordinates.get(randomCoordinate));
+//            step = readUserStep();
+
+            //проверяем допустима ли данная координата с учетом уже расставленных
+            if (isValidCoordinate(step, fieldPC)) {
+
+                //запускаем цикл для определения возможности пострения корабля во всех направлениях
+                for (int i = 1; i < ship.decks; i++) {
+                    //определяем новую координату смещением на один вверх (север). Сейчас она не приаязана к полю
+                    Pair<Integer, Integer> stepNord = new Pair<Integer, Integer>(step.getKey() + i, step.getValue());
+                    //если она в рамках поля, проверяем возможные расположения корабля
+                    if (validRange(stepNord)) {
+                        //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                        nord = nord && isValidCoordinate(stepNord, fieldPC);
+                    } else {
+                        //если новая координата выходит
+                        nord = false;
+                    }
+                    //определяем новую координату смещением на один влево (запад). Сейчас она не приаязана к полю
+                    Pair<Integer, Integer> stepWest = new Pair<Integer, Integer>(step.getKey(), step.getValue() - i);
+                    //если она в рамках поля, проверяем возможные расположения корабля
+                    if (validRange(stepWest)) {
+                        //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                        west = west && isValidCoordinate(stepWest, fieldPC);
+                    } else {
+                        //если новая координата выходит
+                        west = false;
+                    }
+                    //определяем новую координату смещением на один вниз (юг). Сейчас она не приаязана к полю
+                    Pair<Integer, Integer> stepSouth = new Pair<Integer, Integer>(step.getKey() - i, step.getValue());
+                    //если она в рамках поля, проверяем возможные расположения корабля
+                    if (validRange(stepSouth)) {
+                        //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                        south = south && isValidCoordinate(stepSouth, fieldPC);
+                    } else {
+                        //если новая координата выходит
+                        south = false;
+                    }
+                    //определяем новую координату смещением на один вниз (юг). Сейчас она не приаязана к полю
+                    Pair<Integer, Integer> stepEast = new Pair<Integer, Integer>(step.getKey(), step.getValue() + i);
+                    //если она в рамках поля, проверяем возможные расположения корабля
+                    if (validRange(stepEast)) {
+                        //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                        east = east && isValidCoordinate(stepEast, fieldPC);
+                    } else {
+                        //если новая координата выходит
+                        east = false;
+                    }
+                }
+            //если полученная координата не прошла проверку, то ставим тригеры в ЛОЖЬ, чтобы не выходить из цикла
+            } else {
+                nord = false;
+                west = false;
+                east = false;
+                south = false;
+            }
+            //цикл будет повторяться только если ВСЕ логические переменные будут ложными,
+            // то есть не будет возможности разместить корабль
+            isPossiblePosition = !nord && !west && !east && !south;
+        }
+        //мы вышли из цикла и у нас есть 4 логические переменные, которые говорят о возможности построения
+        // корабля в заданном направлении, теперь надо выбрать из доступных случайно одно направление
+        // и записать в переданный в метод аргумент Ship[i]
+
+        //заполняем список возможных кораблей, чтобы из него потом выбрать один
+        //если норд ИСТИНА (корабль может быть размещен таким образом),
+        // то заполняем элемент списка кораблей нужными значениями
+        if (nord) {
+            //создаем корабль
+            Ship shipToNord = new Ship(ship.decks);
+            //заполняем координаты корабля
+            for (int i = 0; i < ship.decks; i++) {
+                shipToNord.positions[i] = new Pair<>(step.getKey() + i, step.getValue());
+            }
+            //добавляем корабль в список
+            possibleShips.add(shipToNord);
+        }
+        //повтор для другого направления (юг)
+        if (south) {
+            Ship shipToSouth = new Ship(ship.decks);
+            for (int i = 0; i < ship.decks; i++) {
+                shipToSouth.positions[i] = new Pair<>(step.getKey() - i, step.getValue());
+            }
+            possibleShips.add(shipToSouth);
+        }
+        //повтор для другого направления (запад)
+        if (west) {
+            Ship shipToWest = new Ship(ship.decks);
+            for (int i = 0; i < ship.decks; i++) {
+                shipToWest.positions[i] = new Pair<>(step.getKey(), step.getValue() - i);
+            }
+            possibleShips.add(shipToWest);
+        }
+        //повтор для другого направления (восток)
+        if (east) {
+            Ship shipToEast = new Ship(ship.decks);
+            for (int i = 0; i < ship.decks; i++) {
+                shipToEast.positions[i] = new Pair<>(step.getKey(), step.getValue() + i);
+            }
+            possibleShips.add(shipToEast);
+        }
+        //присваиваем переданному параметру ссылку на выбранный корабль через случайный выбор из списка
+        // возможных позиций корабля при данной изначальной координате
+        ship = possibleShips.get((int) (Math.random() * (possibleShips.size())));
+//проходим циклом по созданному кораблю
+        for (int i = 0; i < ship.positions.length; i++) {
+            //и заносим клетки корабля в список "корабли" данного поля
+            fieldPC.ships.add(ship.positions[i]);
+            //а также ставим статусы "корабль" (Х) этим клеткам
+            fieldPC.cells[ship.positions[i].getKey()][ship.positions[i].getValue()].setStatus(2);
+        }
+    }
+
+//////////для проверки НЕ выхода за рамки поля. ИСТИНА, если внутри поля
+    private static boolean validRange(Pair<Integer, Integer> step) {
+        return (step.getKey() >= 0)&&(step.getKey() <= 9)&&(step.getValue() >= 0)&&(step.getValue() <= 9);
+    }
+
+//////////Метод для расстановки кораблей игроком. В метод передаем поле игрока, которое изменяется методом
     private static void fillFieldUser(Field fieldUser) {
         //инструкция Расстановка.1
         System.out.println("Выбор расстановки: введите \"1\", если будете расставлять корабли самостоятельно, " +
@@ -375,29 +545,56 @@ public class Main {
             System.out.println("Для расстановки кораблей нужно будет указывать координаты " +
                     "коробля в формате, например, \"а5\"");
             System.out.print("Начнем! ");
-            //цикл так как нужно расставить 10 караблей
-            while (fieldUser.ships.size() < 10) {
-                System.out.println("Введите координату вашего корабля:");
-                //считываем введенную игроком координату для создания корабля и заносим ее в статическую переменную
-                step = readUserStep();
-                //проверяем допустима ли данная координата
-                if (isValidCoordinate(step, fieldUser)) {
-                    //если да, то заносим коодинату в список кораблей и меняем значение статуса клетки
-                    fieldUser.ships.add(step);
-                    fieldUser.cells[step.getKey()][step.getValue()].setStatus(2);
-                    //а также делаем данную клету видимой для печати
-                    fieldUser.cells[step.getKey()][step.getValue()].visible = true;
-                    //гооврим какой корабль по счету введен и просим ввести следующий
-                    System.out.println("Вы разместили " + fieldUser.ships.size() + "-й корабль. " +
-                            "Всего надо 10 кораблей :)");
-                    //для визуального удобства делаем вывод поля
-                    Field.print(fieldUser);
-                    //если нет, то просим ввести новую
-                } else {
-                    System.out.println("Сюда нельзя поставить корабль (либо уже стоит, либо слишком близко к другим.");
-                    System.out.println("Введите, пожалуйста, заново:");
+
+//////////////////делаем в цикле, так как нужно расставить 10 кораблей (в сумме 20 клеток)
+            while (fieldUser.ships.size() < 20) {
+                //максимальное количество палуб
+                int countOfdecks = 4;
+                //массив кораблей -----  (ПОКА НИ НА ЧТО НЕ ВЛИЯЕТ И НЕ ИСПОЛЬЗУЕТСЯ)
+                Ship[] ships = new Ship[10];
+                //счетчик для массива корабелй
+                int k = 0;
+                //цикл для создания нужного количества кораблей
+                //идем от самого большого
+                for (int i = countOfdecks; i > 0; i--) {
+                    //так чтобы количество палуб уменьшалось, а количество кораблей увеличивалось
+                    for (int j = i - 1; j < countOfdecks; j++) {
+                        //создаем экземпляр корабля с заданным количеством палуб
+                        ships[k] = new Ship(i);
+                        System.out.println("Размещаем " + i + "-палубный корабль.");
+                        //размещаем его на поле через метод
+                        postingShipUser(ships[k], fieldUser);
+                        //увеличиваем счетчик
+                        k++;
+                        System.out.println("Вы успешно ввели координаты " + k + "-го корабля.");
+                        Field.print(fieldUser);
+                    }
                 }
             }
+
+//            //цикл так как нужно расставить 10 караблей
+//            while (fieldUser.ships.size() < 10) {
+//                System.out.println("Введите координату вашего корабля:");
+//                //считываем введенную игроком координату для создания корабля и заносим ее в статическую переменную
+//                step = readUserStep();
+//                //проверяем допустима ли данная координата
+//                if (isValidCoordinate(step, fieldUser)) {
+//                    //если да, то заносим коодинату в список кораблей и меняем значение статуса клетки
+//                    fieldUser.ships.add(step);
+//                    fieldUser.cells[step.getKey()][step.getValue()].setStatus(2);
+//                    //а также делаем данную клету видимой для печати
+//                    fieldUser.cells[step.getKey()][step.getValue()].visible = true;
+//                    //гооврим какой корабль по счету введен и просим ввести следующий
+//                    System.out.println("Вы разместили " + fieldUser.ships.size() + "-й корабль. " +
+//                            "Всего надо 10 кораблей :)");
+//                    //для визуального удобства делаем вывод поля
+//                    Field.print(fieldUser);
+//                    //если нет, то просим ввести новую
+//                } else {
+//                    System.out.println("Сюда нельзя поставить корабль (либо уже стоит, либо слишком близко к другим.");
+//                    System.out.println("Введите, пожалуйста, заново:");
+//                }
+//            }
         //иначе выбран тип автозаполнения (введена "2")
         } else {
             //делаем в цикле, так как нужна возможность переиграть, если игроку не понравилась расстановка
@@ -436,21 +633,249 @@ public class Main {
         }
     }
 
-    //метод, проверяющий допустимость выбора клетки при условии наличия других кораблей
-    private static boolean isValidCoordinate(Pair<Integer, Integer> pair, Field field) {
-        if (field.cells[pair.getKey()][pair.getValue()].getStatus() == 2) return false;
-        if (field.ships.size()>0) {
-            for (int i = 0; i < field.ships.size(); i++) {
-                //временные переменные созданы для краткости записи условий
-                //а - разница по столбцам, взятая по модулю
-                int a = Math.abs(field.ships.get(i).getKey() - pair.getKey());
-                //разница по строкам, взятая по модулю
-                int b = Math.abs(field.ships.get(i).getValue() - pair.getValue());
-                //проверяем условия близости координат введенных раннее кораблей с проверяемой
-                if (a == 0 && b == 1) return false;
-                if (b == 0 && a == 1) return false;
-                if (a == 1 && b == 1) return false;
+    private static void postingShipUser(Ship ship, Field fieldUser) {
+        boolean validCoordinate = true;
+        while (validCoordinate) {
+            System.out.println("Введите первую координату вашего корабля:");
+            //считываем введенную игроком ПЕРВУЮ координату для создания корабля и заносим ее в статическую переменную
+            step = readUserStep();
+            if (isValidCoordinate(step,fieldUser)) {
+                //если зашли сюда, то координата валидная, значит больше этот цикл не нужен
+                validCoordinate = false;
+
+                //объявляем списки возможных положений корабля по направлениям
+                ArrayList<Pair<Integer,Integer>> possibleStepsToNord = null;
+                ArrayList<Pair<Integer,Integer>> possibleStepsToSouth = null;
+                ArrayList<Pair<Integer,Integer>> possibleStepsToWest = null;
+                ArrayList<Pair<Integer,Integer>> possibleStepsToEast = null;
+
+                if (ship.decks > 1) {
+                    //вводим логические переменные для определения возможных направлений
+                    boolean nord = true;
+                    boolean west = true;
+                    boolean east = true;
+                    boolean south = true;
+                    //запускаем цикл для определения возможности пострения корабля во всех направлениях
+                    for (int i = 1; i < ship.decks; i++) {
+                        //определяем новую координату смещением на один вверх (север). Сейчас она не приаязана к полю
+                        Pair<Integer, Integer> stepNord = new Pair<Integer, Integer>(step.getKey() + i, step.getValue());
+                        //если она в рамках поля, проверяем возможные расположения корабля
+                        if (validRange(stepNord)) {
+                            //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                            nord = nord && isValidCoordinate(stepNord, fieldUser);
+                        } else {
+                            //если новая координата выходит
+                            nord = false;
+                        }
+                        //определяем новую координату смещением на один влево (запад). Сейчас она не приаязана к полю
+                        Pair<Integer, Integer> stepWest = new Pair<Integer, Integer>(step.getKey(), step.getValue() - i);
+                        //если она в рамках поля, проверяем возможные расположения корабля
+                        if (validRange(stepWest)) {
+                            //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                            west = west && isValidCoordinate(stepWest, fieldUser);
+                        } else {
+                            //если новая координата выходит
+                            west = false;
+                        }
+                        //определяем новую координату смещением на один вниз (юг). Сейчас она не приаязана к полю
+                        Pair<Integer, Integer> stepSouth = new Pair<Integer, Integer>(step.getKey() - i, step.getValue());
+                        //если она в рамках поля, проверяем возможные расположения корабля
+                        if (validRange(stepSouth)) {
+                            //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                            south = south && isValidCoordinate(stepSouth, fieldUser);
+                        } else {
+                            //если новая координата выходит
+                            south = false;
+                        }
+                        //определяем новую координату смещением на один вниз (юг). Сейчас она не приаязана к полю
+                        Pair<Integer, Integer> stepEast = new Pair<Integer, Integer>(step.getKey(), step.getValue() + i);
+                        //если она в рамках поля, проверяем возможные расположения корабля
+                        if (validRange(stepEast)) {
+                            //определяем логическую переменную. Если хоть раз будет ЛОЖЬ, то итогом будет ЛОЖЬ
+                            east = east && isValidCoordinate(stepEast, fieldUser);
+                        } else {
+                            //если новая координата выходит
+                            east = false;
+                        }
+                    }
+
+                    //создаем временный список для хранения достурных координат по каждому направлению
+                    possibleStepsToNord = new ArrayList<>();
+                    possibleStepsToSouth = new ArrayList<>();
+                    possibleStepsToWest = new ArrayList<>();
+                    possibleStepsToEast = new ArrayList<>();
+
+                    //если норд ИСТИНА (корабль может быть размещен таким образом),
+                    // то делаем вывод о допустимых ходах
+                    if (nord) {
+                        //создаем корабль
+                        Ship shipToNord = new Ship(ship.decks);
+                        //заполняем координаты корабля
+                        for (int i = 0; i < ship.decks; i++) {
+                            shipToNord.positions[i] = new Pair<>(step.getKey() + i, step.getValue());
+                            possibleStepsToNord.add(shipToNord.positions[i]);
+                        }
+                        System.out.print("Вам доступны следующие координаты: ");
+                        for (int i = 1; i < shipToNord.positions.length; i++) {
+                            System.out.print(translateToHumanIndex(shipToNord.positions[i]) + " ");
+                        }
+                        System.out.println();
+                    }
+                    //аналогично для другого направления (юг)
+                    if (south) {
+                        Ship shipToSouth = new Ship(ship.decks);
+                        for (int i = 0; i < ship.decks; i++) {
+                            shipToSouth.positions[i] = new Pair<>(step.getKey() - i, step.getValue());
+                            possibleStepsToSouth.add(shipToSouth.positions[i]);
+                        }
+                        System.out.print("Вам доступны следующие координаты: ");
+                        for (int i = 1; i < shipToSouth.positions.length; i++) {
+                            System.out.print(translateToHumanIndex(shipToSouth.positions[i]) + " ");
+                        }
+                        System.out.println();
+                    }
+                    //аналогично для другого направления (запад)
+                    if (west) {
+                        Ship shipToWest = new Ship(ship.decks);
+                        for (int i = 0; i < ship.decks; i++) {
+                            shipToWest.positions[i] = new Pair<>(step.getKey(), step.getValue() - i);
+                            possibleStepsToWest.add(shipToWest.positions[i]);
+                        }
+                        System.out.print("Вам доступны следующие координаты: ");
+                        for (int i = 1; i < shipToWest.positions.length; i++) {
+                            System.out.print(translateToHumanIndex(shipToWest.positions[i]) + " ");
+                        }
+                        System.out.println();
+                    }
+                    //аналогично для другого направления (восток)
+                    if (east) {
+                        Ship shipToEast = new Ship(ship.decks);
+                        for (int i = 0; i < ship.decks; i++) {
+                            shipToEast.positions[i] = new Pair<>(step.getKey(), step.getValue() + i);
+                            possibleStepsToEast.add(shipToEast.positions[i]);
+                        }
+                        System.out.print("Вам доступны следующие координаты: ");
+                        for (int i = 1; i < shipToEast.positions.length; i++) {
+                            System.out.print(translateToHumanIndex(shipToEast.positions[i]) + " ");
+                        }
+                        System.out.println();
+                    }
+                }
+
+                //теперь заносим ПЕРВУЮ коодинату в список кораблей и меняем значение статуса клетки
+                fieldUser.ships.add(step);
+                fieldUser.cells[step.getKey()][step.getValue()].setStatus(2);
+                //а также делаем данную клету видимой для печати
+                fieldUser.cells[step.getKey()][step.getValue()].visible = true;
+
+                //если больше двух палуб, то заходим сюда
+                if (ship.decks >=2) {
+                    //вводим массив для правильного выбора в случае, если палуб более 2-х
+                    ArrayList<Pair<Integer,Integer>> possibleStepsToShip = new ArrayList<>();
+
+                    System.out.println("Следующая координата для этого корабля (из возможных): ");
+                    //логический тригер для цикла
+                    boolean validCoordinateSecondCoordinate = true;
+                    while (validCoordinateSecondCoordinate) {
+                        //считываем ввод игрока (ВТОРАЯ координата)
+                        step = readUserStep();
+                        //определяем массив правильного выбора (направление, выбранное игроком второй координатой)
+                        if (possibleStepsToNord.contains(step)) {
+                            for (int i = 1; i < possibleStepsToNord.size(); i++) {
+                                possibleStepsToShip.add(possibleStepsToNord.get(i));
+                            }
+                        } else if (possibleStepsToSouth.contains(step)) {
+                            for (int i = 1; i < possibleStepsToSouth.size(); i++) {
+                                possibleStepsToShip.add(possibleStepsToSouth.get(i));
+                            }
+                        } else if (possibleStepsToEast.contains(step)) {
+                            for (int i = 1; i < possibleStepsToEast.size(); i++) {
+                                possibleStepsToShip.add(possibleStepsToEast.get(i));
+                            }
+                        } else {
+                            for (int i = 1; i < possibleStepsToWest.size(); i++) {
+                                possibleStepsToShip.add(possibleStepsToWest.get(i));
+                            }
+                        }
+                        //если ВТОРАЯ координата находится в массиве правильного выбора (а для 2-хпалубника это будет
+                        // всегда так), то
+                        if (possibleStepsToShip.contains(step)) {
+                            //выключаем тригер цикла
+                            validCoordinateSecondCoordinate = false;
+                            //и заносим коодинату в список кораблей и меняем значение статуса клетки
+                            fieldUser.ships.add(step);
+                            fieldUser.cells[step.getKey()][step.getValue()].setStatus(2);
+                            //а также делаем данную клету видимой для печати
+                            fieldUser.cells[step.getKey()][step.getValue()].visible = true;
+
+                            //убираем выбранную координату из массива правильного выбора
+                            possibleStepsToShip.remove(step);
+
+                            //далее если речь идет о 3-хпалубнике и более, то
+                            if (ship.decks >= 3) {
+                                //запускаем цикл для получения оставшихся координат корабля,
+                                // поскольку массив правильного выбора уже сформирован
+                                for (int i = 0;i < ship.decks - 2; i++) {
+                                    boolean validCoordinateThirdCoordinate = true;
+                                    //в цикле, чтобы добиться правильного ввода
+                                    while (validCoordinateThirdCoordinate) {
+                                        System.out.print("Следующая координата для этого корабля (из возможных ");
+                                        for (Pair<Integer, Integer> integerIntegerPair : possibleStepsToShip) {
+                                            System.out.print(translateToHumanIndex(integerIntegerPair) + " ");
+                                        }
+                                        System.out.println("): ");
+                                        //считываем координату игрока (ТРЕТЬЯ и далее координата)
+                                        step = readUserStep();
+                                        //если она входит в массив правильного выбора, то
+                                        if (possibleStepsToShip.contains(step)) {
+                                            //выключаем тригер цикла
+                                            validCoordinateThirdCoordinate = false;
+                                            //и заносим коодинату в список кораблей и меняем значение статуса клетки
+                                            fieldUser.ships.add(step);
+                                            fieldUser.cells[step.getKey()][step.getValue()].setStatus(2);
+                                            //а также делаем данную клету видимой для печати
+                                            fieldUser.cells[step.getKey()][step.getValue()].visible = true;
+
+                                            //убираем выбранную координату из массива правильного выбора
+                                            possibleStepsToShip.remove(step);
+
+                                        } else {
+                                            //в противном случае говорим об ошибке и заставляем ввести заново
+                                            System.out.println("Нужно выбрать из доступных! " +
+                                                    "Повторите ввод, пожалуйста.");
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            //в противном случае говорим об ошибке и заставляем ввести заново
+                            System.out.println("Нужно выбрать из доступных! Повторите ввод, пожалуйста.");
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Сюда нельзя поставить корабль (либо уже стоит, либо слишком близко к другим.");
+                System.out.println("Введите, пожалуйста, заново:");
+                validCoordinate = true;
             }
+        }
+    }
+
+    //метод, проверяющий допустимость выбора клетки при условии наличия других кораблей
+    private static boolean isValidCoordinate(Pair<Integer, Integer> coordinate, Field field) {
+        //если в данной клетке есть корабль, то возвращаем ЛОЖЬ и выход из метода
+        if (field.cells[coordinate.getKey()][coordinate.getValue()].getStatus() == 2) return false;
+        //проходим циклом по списку клеток-кораблей, чтобы получить расстояние до каждой
+        for (int i = 0; i < field.ships.size(); i++) {
+            //временные переменные созданы для краткости записи условий
+            //а - разница по столбцам, взятая по модулю
+            int a = Math.abs(field.ships.get(i).getKey() - coordinate.getKey());
+            //b - разница по строкам, взятая по модулю
+            int b = Math.abs(field.ships.get(i).getValue() - coordinate.getValue());
+            //проверяем условия близости координат введенных раннее кораблей с проверяемой
+            if (a == 0 && b == 1) return false;
+            if (a == 1 && b == 0) return false;
+            if (a == 1 && b == 1) return false;
         }
         return true;
     }
