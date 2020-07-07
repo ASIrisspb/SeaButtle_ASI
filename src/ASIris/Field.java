@@ -102,6 +102,10 @@ public class Field {
 
     //метод вывода в консоль полей с текущим состоянием клеток (все поля)
     public static void print(Field[] fields) {
+        for (Field value : fields) {
+            System.out.print("      " + value.name + "       ");
+        }
+        System.out.println();
         for (int i = 0; i < fields.length; i++) {
             System.out.print("  ");
             for (char alphabet: alphabet) {
@@ -124,7 +128,8 @@ public class Field {
 
     //метод вывода в консоль полей с текущим состоянием клеток (все поля)
     public static void print(Field field) {
-            System.out.print("  ");
+        System.out.println(field.name);
+        System.out.print("  ");
             for (char alphabet: alphabet) {
                 String s = " " + alphabet;
                 System.out.print(s.toUpperCase());
