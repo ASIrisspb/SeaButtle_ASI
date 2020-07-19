@@ -12,6 +12,8 @@ package ASIris;
     VersionConsole 5.20200628: создание метода для ПК, расставляющего нормальные корабли
     VersionConsole 5.20200701: доделан метод расстановки нормальных кораблей для компьютера
     VersionConsole 5.20200707: выбор расстановки после первой координаты для пользователя
+    VersionConsole 5.20200719: введение механизма "ранил-убил" и коррекция программы для этого
+                                (переделка механизма хранения кораблей)
 
     @tasks
     - реализовать механизм "ранил - потопил"
@@ -385,14 +387,14 @@ public class Main {
         return nord && south && west && east;
     }
 
-    //метод обратного перевода координаты в человеческое представление
+//////////метод обратного перевода координаты в человеческое представление
     private static String translateToHumanIndex(Pair<Integer, Integer> step) {
         char column = Field.alphabet[step.getValue()];
         String line = String.valueOf(step.getKey()+1);
         return column + line;
     }
 
-    //метод обрисовки подбитого корабля "ноликами"
+/////////метод обрисовки подбитого корабля "ноликами"
     private static void noShoot(Pair<Integer, Integer> pair, Field field) {
         //циклом перебираем все клетки вокруг данной
         for (int i = pair.getKey() - 1; i <= pair.getKey() + 1; i++) {
@@ -450,7 +452,7 @@ public class Main {
         boolean isPossiblePosition = true;
 
         //МАССИВ ЛОГИЧЕСКИХ ПЕРЕМЕННЫХ
-        boolean nord = true, west=true, east=true,south=true;
+        boolean nord = true, west=true, east=true, south=true;
 
         //цикл, чтобы добиться допустимого размещения корабля
         while (isPossiblePosition) {

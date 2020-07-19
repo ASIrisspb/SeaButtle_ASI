@@ -9,7 +9,7 @@ import java.util.Iterator;
 public class Field {
 
     //переменная размерности поля (на будущее)
-    private static int dimension = 10;
+    private static int dimensionField = 10;
     //шаблонный список ВСЕХ возможных ходов в человеческом формате!!!
     public static ArrayList<String> allCoordinates = new ArrayList<>(Arrays.asList(
             "а1","а2","а3","а4","а5","а6","а7","а8","а9","а10",
@@ -31,11 +31,11 @@ public class Field {
     //помещаем заполнение статической переменной в блок статик, так как это делается один раз при инициализации класса
     static {
         //цикл для строк
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < dimensionField; i++) {
             //значение строки получаем из значения итератора плюс 1, так как строки нумеруются с 1, а не с 0
             String number = String.valueOf(i+1);
             //цикл для заполнения столбцов в данной строке
-            for (int j = 0; j < dimension; j++) {
+            for (int j = 0; j < dimensionField; j++) {
                 //берем букву из эталона столбцов по индексу
                 char letter = alphabet[j];
                 //соединяем столбец и строку, чтобы получить человеческий вид координаты (индекс клетки)
@@ -48,9 +48,9 @@ public class Field {
         }
     }
     //создаем заготовку поля в качестве переменной объекта (поля класса)
-    public Cell[][] cells = new Cell[dimension][dimension];
+    public Cell[][] cells = new Cell[dimensionField][dimensionField];
     //переменная (поле класса) для учета сделанных выстрелов по данному полю в форме списка пар координат
-    public ArrayList<Pair<Integer, Integer>> availableSteps = new ArrayList<>(dimension*dimension);
+    public ArrayList<Pair<Integer, Integer>> availableSteps = new ArrayList<>(dimensionField * dimensionField);
     // переменная для хранения клеток кораблей также в форме списка пар координат
     public ArrayList<Pair<Integer, Integer>> ships = new ArrayList<>(20);
     //переменная для хранения имени поля (игрока или ПК)
@@ -62,8 +62,8 @@ public class Field {
         //задаем имя полю
         this.name = name;
         //заполняем поле элементами по умолчанию (пустые клетки = точки)
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
+        for (int i = 0; i < dimensionField; i++) {
+            for (int j = 0; j < dimensionField; j++) {
                 //конструктор клетки
                 cells[i][j] = new Cell();
                 //тут же заносим в переменную список пар координат данного поля
@@ -115,10 +115,10 @@ public class Field {
             System.out.print(" ");
         }
         System.out.println();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < dimensionField; i++) {
             for (Field field : fields) {
                 System.out.print(numberOfLine[i] + " ");
-                for (int j = 0; j < dimension; j++) {
+                for (int j = 0; j < dimensionField; j++) {
                     System.out.print(field.cells[i][j] + " ");
                 }
             }
@@ -135,9 +135,9 @@ public class Field {
                 System.out.print(s.toUpperCase());
             }
         System.out.println();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < dimensionField; i++) {
                 System.out.print(numberOfLine[i] + " ");
-                for (int j = 0; j < dimension; j++) {
+                for (int j = 0; j < dimensionField; j++) {
                     System.out.print(field.cells[i][j] + " ");
                 }
             System.out.println();
@@ -157,10 +157,10 @@ public class Field {
             System.out.print(" ");
         }
         System.out.println();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < dimensionField; i++) {
             for (int k = 1; k < fields.length; k++) {
                 System.out.print(numberOfLine[i] + " ");
-                for (int j = 0; j < dimension; j++) {
+                for (int j = 0; j < dimensionField; j++) {
                     System.out.print(fields[k].cells[i][j] + " ");
                 }
             }
