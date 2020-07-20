@@ -33,14 +33,29 @@ public class Ship {
         return countOfNull == positions.length;
     }
 
-    //метод проверки потоплен или нет корабль
-    public boolean shipIsDrown(Field field) {
+    //метод проверки потоплен или нет корабль. На вход подаем координату выстрела и поле, которому принадлежит корабль
+    public boolean shipIsDrown(Field field, Pair<Integer,Integer> shoot) {
+        //обнуляем счетчик попаданий дааного корабля
         int countOfHits = 0;
+
+//        //записываем во временную переменную статус клетки, по которой был выстрел
+//        int temp = field.cells[shoot.getKey()][shoot.getValue()].getStatus();
+//        //временно меняем статус клетки по которой был выстрел на попадание
+//        field.cells[shoot.getKey()][shoot.getValue()].setStatus(3);
+
+        //проходим циклом по всем позициям корабля
         for (Pair<Integer,Integer> position : positions) {
+            //если статус клетки-позиции корабля "подбит",
             if (field.cells[position.getKey()][position.getValue()].getStatus() == 3) {
+                //то плюсуем счетчик
                 countOfHits ++;
             }
         }
+
+//        //возвращаем клетке ее изначальный статус
+//        field.cells[shoot.getKey()][shoot.getValue()].setStatus(temp);
+
+        //возвращаем истину, если все позиции корабля "подбиты"
         return countOfHits == positions.length;
     }
 

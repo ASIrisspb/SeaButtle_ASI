@@ -9,7 +9,9 @@ import java.util.Iterator;
 public class Field {
 
     //переменная размерности поля (на будущее)
-    private static int dimensionField = 10;
+    public static int dimensionField = 10;
+    //переменная количества кораблей (на будущее)
+    public static int countShips = 10;
     //шаблонный список ВСЕХ возможных ходов в человеческом формате!!!
     public static ArrayList<String> allCoordinates = new ArrayList<>(Arrays.asList(
             "а1","а2","а3","а4","а5","а6","а7","а8","а9","а10",
@@ -52,7 +54,7 @@ public class Field {
     //переменная (поле класса) для учета сделанных выстрелов по данному полю в форме списка пар координат
     public ArrayList<Pair<Integer, Integer>> availableSteps = new ArrayList<>(dimensionField * dimensionField);
     // переменная для хранения клеток кораблей также в форме списка пар координат
-    public ArrayList<Pair<Integer, Integer>> ships = new ArrayList<>(20);
+    public ArrayList<Ship> ships = new ArrayList<>();
     //переменная для хранения имени поля (игрока или ПК)
     public String name;
 
@@ -72,7 +74,29 @@ public class Field {
         }
     }
 
-    //метод удаления из списка доступных ходов для ПК availableSteps (пары координат)
+    //метод поиска корабля по координате
+    public int findShip (Pair<Integer, Integer> pair) {
+        //проходим циклом по списку кораблей данного поля
+        for (int i = 0; i < this.ships.size(); i++) {
+            //далее проходим циклом по позициям i-го корабля в списке
+            for (int j = 0; j < this.ships.get(i).positions.length; j++) {
+                //если нашлось совпадение выстрела и позиции корабля, то
+                if ((this.ships.get(i).positions[j].getKey().equals(pair.getKey()))
+                        && (this.ships.get(i).positions[j].getValue().equals(pair.getValue()))) {
+                    //возвращаем индекс корабля в списке корблей данного поля
+                    return i;
+
+                }
+            }
+        }
+        //ставим отрицательное значение, что должно вызвать исключение
+        return -1;
+    }
+
+
+
+    //метод удаления из списка доступных ходов для ПК availableSteps (пары координат). Используем для стрельбы ПК,
+    // чтобы не стрелял в одно и то же место
     public void delFromAvailableSteps (Pair<Integer, Integer> pair) {
         Iterator<Pair<Integer, Integer>> iterator = this.availableSteps.iterator();
         while (iterator.hasNext()) {
@@ -83,17 +107,17 @@ public class Field {
         }
     }
 
-    //метод удаления из списка кораблей (пары координат корабля)
+    //метод удаления из списка кораблей. Точка отсчета - координата. Используем метод после проверки,
+    // что корабль потоплен
     public void delFromShips (Pair<Integer, Integer> pair) {
-        Iterator<Pair<Integer, Integer>> iterator = this.ships.iterator();
-        while (iterator.hasNext()) {
-            Pair<Integer, Integer> nextPair = iterator.next();
-            if ((nextPair.getKey().equals(pair.getKey())) && (nextPair.getValue().equals(pair.getValue()))) {
-                iterator.remove();
-            }
-        }
+        //получаем индекс корабля по координате
+        int indexShip = this.findShip(pair);
+        //удаляем этот корабль
+        this.ships.remove(indexShip);
     }
 
+    //метод обнуления кораблей для данного поля. Используем при автоматической расстановке для игрока,
+    // когда он не согласен с предложенным вариантом расстановки
     public void delFromShipsAll (Field field) {
         for (int i = field.ships.size() - 1; i >= 0; i--) {
             field.ships.remove(0);
@@ -102,6 +126,7 @@ public class Field {
 
     //метод вывода в консоль полей с текущим состоянием клеток (все поля)
     public static void print(Field[] fields) {
+        System.out.println("--------------------------------------------------------------------------------");
         for (Field value : fields) {
             System.out.print("      " + value.name + "       ");
         }
@@ -124,10 +149,12 @@ public class Field {
             }
             System.out.println();
         }
+        System.out.println("--------------------------------------------------------------------------------");
     }
 
-    //метод вывода в консоль полей с текущим состоянием клеток (все поля)
+    //метод вывода в консоль указанного поля с текущим состоянием клеток
     public static void print(Field field) {
+        System.out.println("-----------------------------------------------------------------------------------");
         System.out.println(field.name);
         System.out.print("  ");
             for (char alphabet: alphabet) {
@@ -142,12 +169,17 @@ public class Field {
                 }
             System.out.println();
         }
+        System.out.println("--------------------------------------------------------------------------------");
     }
-
 
     //метод вывода в консоль полей с текущим состоянием клеток (без поля Игрока)
     public static void print(String withoutPlayer, Field[] fields) {
         withoutPlayer = "Без Игрока";
+        System.out.println("--------------------------------------------------------------------------------");
+        for (int i = 1; i < fields.length; i++) {
+            System.out.print("     " + fields[i].name + "       ");
+        }
+        System.out.println();
         for (int i = 1; i < fields.length; i++) {
             System.out.print("  ");
             for (char alphabet: alphabet) {
@@ -166,7 +198,6 @@ public class Field {
             }
             System.out.println();
         }
+        System.out.println("--------------------------------------------------------------------------------");
     }
-
-
 }
