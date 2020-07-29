@@ -1,33 +1,41 @@
 package ASIris;
 
 import javafx.util.Pair;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
 public class Field {
 
-    //переменная размерности поля (на будущее)
-    public static int dimensionField = 10;
+    //переменная размерности поля (по умолчанию = 10, но меняется в методе мейн)
+    public static int dimensionField;
+    static {
+        System.out.println("Теперь определите размер поля для игры (от 10х10 до 28х28) " +
+                "- укажите количество клеток по одной стороне");
+        // и устанавливаем значение размероности поля для всех полей
+        dimensionField = Main.choiceFromRangeNumbers(10,28);
+    }
     //переменная количества кораблей (на будущее)
     public static int countShips = 10;
+    //шаблон отображения столбцов поля (28 букв!)
+    static Character[] alphabet = {'а','б','в','г','д','е','ж','з','и','к',
+                                    'л','м','н','о','п','р','с','т','у','ф',
+                                    'х','ц','ч','ш','щ','э','ю','я'};
+    //шаблон отображения линий поля (по количеству букв!)
+    static String[] numberOfLine = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                                    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+                                    "21", "22", "23", "24", "25", "26", "27", "28"};
     //шаблонный список ВСЕХ возможных ходов в человеческом формате!!!
-    public static ArrayList<String> allCoordinates = new ArrayList<>(Arrays.asList(
-            "а1","а2","а3","а4","а5","а6","а7","а8","а9","а10",
-            "б1","б2","б3","б4","б5","б6","б7","б8","б9","б10",
-            "в1","в2","в3","в4","в5","в6","в7","в8","в9","в10",
-            "г1","г2","г3","г4","г5","г6","г7","г8","г9","г10",
-            "д1","д2","д3","д4","д5","д6","д7","д8","д9","д10",
-            "е1","е2","е3","е4","е5","е6","е7","е8","е9","е10",
-            "ж1","ж2","ж3","ж4","ж5","ж6","ж7","ж8","ж9","ж10",
-            "з1","з2","з3","з4","з5","з6","з7","з8","з9","з10",
-            "и1","и2","и3","и4","и5","и6","и7","и8","и9","и10",
-            "к1","к2","к3","к4","к5","к6","к7","к8","к9","к10"));
-    //шаблон отображения линий поля
-    static String[] numberOfLine = {" 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10"};
-    //шаблон отображения столбцов поля
-    static Character[] alphabet = {'а','б','в','г','д','е','ж','з','и','к'};
+    public static ArrayList<String> allCoordinates = new ArrayList<>();
+    //помещаем заполнение статической переменной в блок статик, так как это делается один раз при инициализации класса
+    static {
+        for (int i = 0; i < dimensionField; i++) {
+            for (int j = 0; j < dimensionField; j++) {
+                allCoordinates.add(alphabet[i] + numberOfLine[j]);
+            }
+        }
+    }
     //таблица перевода строчного ввода координат в цифровой, содеражщийся в парах
     public static HashMap<String,Pair<Integer,Integer>> translateTable = new HashMap<>();
     //помещаем заполнение статической переменной в блок статик, так как это делается один раз при инициализации класса
@@ -57,6 +65,8 @@ public class Field {
     public ArrayList<Ship> ships = new ArrayList<>();
     //переменная для хранения имени поля (игрока или ПК)
     public String name;
+    //переменная для хранения информации о наличии раненных кораблей
+    boolean feildHasHurtShip = false;
 
 
     //конструктор класса, в котором создаем пустое поле
@@ -89,7 +99,9 @@ public class Field {
                 }
             }
         }
-        //ставим отрицательное значение, что должно вызвать исключение
+        //ставим отрицательное значение, что должно вызвать исключение (НЕ ДОЛЖНО ПОЯВЛЯТЬСЯ!).
+        // Мы так можем сделать, поскольку в данный метод мы зайдем только если попали в корабль,
+        // а значит совпадение точно найдется.
         return -1;
     }
 
@@ -107,15 +119,6 @@ public class Field {
         }
     }
 
-    //метод удаления из списка кораблей. Точка отсчета - координата. Используем метод после проверки,
-    // что корабль потоплен
-    public void delFromShips (Pair<Integer, Integer> pair) {
-        //получаем индекс корабля по координате
-        int indexShip = this.findShip(pair);
-        //удаляем этот корабль
-        this.ships.remove(indexShip);
-    }
-
     //метод обнуления кораблей для данного поля. Используем при автоматической расстановке для игрока,
     // когда он не согласен с предложенным вариантом расстановки
     public void delFromShipsAll (Field field) {
@@ -124,80 +127,137 @@ public class Field {
         }
     }
 
-    //метод вывода в консоль полей с текущим состоянием клеток (все поля)
-    public static void print(Field[] fields) {
-        System.out.println("--------------------------------------------------------------------------------");
-        for (Field value : fields) {
-            System.out.print("      " + value.name + "       ");
-        }
-        System.out.println();
-        for (int i = 0; i < fields.length; i++) {
-            System.out.print("  ");
-            for (char alphabet: alphabet) {
-                String s = " " + alphabet;
-                System.out.print(s.toUpperCase());
-            }
-            System.out.print(" ");
-        }
-        System.out.println();
-        for (int i = 0; i < dimensionField; i++) {
-            for (Field field : fields) {
-                System.out.print(numberOfLine[i] + " ");
+    //метод вывода в консоль полей с текущим состоянием клеток. В параметр name передаем имя поля,
+    // которое надо исключить для вывода (когда не нужно выводить поле игрока)
+    public static void print(String name, Field[] fields) {
+        //разделитель
+        for (Field field : fields) {
+            //разделитель вместо цифр
+            System.out.print("---");
+            if (!field.name.equals(name)) {
+                //выводим разделители по количеству столбцов
                 for (int j = 0; j < dimensionField; j++) {
-                    System.out.print(field.cells[i][j] + " ");
+                    System.out.print("--");
                 }
             }
+        }
+        //перевод на новую строку
+        System.out.println();
+        //цикл для вывода подписей полей
+        for (int i = 0; i < fields.length; i++) {
+            //если нет совпадения с переданным именем, то печатаем все, если же есть, то исключаем указанное поле
+            if (!fields[i].name.equals(name)) {
+                //для первого поля - поля игрока, так как длина имени отличается от остальных
+                if (i == 0) {
+                    System.out.print("   " + fields[i].name);
+                    for (int j = 0; j < (dimensionField * 2 - 2); j++) {
+                        System.out.print(" ");
+                    }
+                //для вывода имен компьютеров
+                } else {
+                    System.out.print(fields[i].name);
+                    for (int j = 0; j < (dimensionField * 2 - 8); j++) {
+                        System.out.print(" ");
+                    }
+                }
+            } else {
+                System.out.print("   ");
+            }
+        }
+        //перевод на новую строку
+        System.out.println();
+        //вывод подписей столбцов (алфавит)
+        for (Field field : fields) {
+            //исключаем вывод для указанного поля
+            if (!field.name.equals(name)) {
+                System.out.print("  ");
+                for (int j = 0; j < dimensionField; j++) {
+                    String s = " " + alphabet[j];
+                    System.out.print(s.toUpperCase());
+                }
+                System.out.print(" ");
+            }
+        }
+        //перевод на новую строку
+        System.out.println();
+        //вывод строк
+        for (int i = 0; i < dimensionField; i++) {
+            //каждая строка состоит из цифры и строки поля
+            for (Field field : fields) {
+                if (!field.name.equals(name)) {
+                    //добавляем пробел, чтобы выровнить с двузначными числами
+                    if (i < 9) {
+                        System.out.print(" " + numberOfLine[i] + " ");
+                    } else {
+                        System.out.print(numberOfLine[i] + " ");
+                    }
+                    //в каждом поле выводим клетки i-й строки
+                    for (int j = 0; j < dimensionField; j++) {
+                        System.out.print(field.cells[i][j] + " ");
+                    }
+                }
+            }
+            //перевод на новую строку
             System.out.println();
         }
-        System.out.println("--------------------------------------------------------------------------------");
+        //разделитель
+        for (Field field : fields) {
+            //разделитель вместо цифр
+            System.out.print("---");
+            if (!field.name.equals(name)) {
+                //выводим разделители по количеству столбцов
+                for (int j = 0; j < dimensionField; j++) {
+                    System.out.print("--");
+                }
+            }
+        }
+        //перевод на новую строку
+        System.out.println();
     }
 
     //метод вывода в консоль указанного поля с текущим состоянием клеток
     public static void print(Field field) {
-        System.out.println("-----------------------------------------------------------------------------------");
-        System.out.println(field.name);
+        //разделитель
+        System.out.print("---");
+        // выводим разделители по количеству столбцов
+        for (int j = 0; j < dimensionField; j++) {
+            System.out.print("--");
+        }
+        //перевод на новую строку
+        System.out.println();
+        //вывод имени поля (без цикла, так как одно)
+        System.out.println("   " + field.name);
+        //отсутп для красоты
         System.out.print("  ");
-            for (char alphabet: alphabet) {
-                String s = " " + alphabet;
-                System.out.print(s.toUpperCase());
-            }
+        //алфавит
+        for (int j = 0; j < dimensionField; j++) {
+            String s = " " + alphabet[j];
+            System.out.print(s.toUpperCase());
+        }
+        //перевод на новую строку
         System.out.println();
+        //вывод строк
         for (int i = 0; i < dimensionField; i++) {
+            //сначала идет цифра
+            if (i < 9) {
+                System.out.print(" " + numberOfLine[i] + " ");
+            } else {
                 System.out.print(numberOfLine[i] + " ");
-                for (int j = 0; j < dimensionField; j++) {
-                    System.out.print(field.cells[i][j] + " ");
-                }
+            }
+            //потом сами клетки
+            for (int j = 0; j < dimensionField; j++) {
+                System.out.print(field.cells[i][j] + " ");
+            }
+            //перевод на новую строку
             System.out.println();
         }
-        System.out.println("--------------------------------------------------------------------------------");
-    }
-
-    //метод вывода в консоль полей с текущим состоянием клеток (без поля Игрока)
-    public static void print(String withoutPlayer, Field[] fields) {
-        withoutPlayer = "Без Игрока";
-        System.out.println("--------------------------------------------------------------------------------");
-        for (int i = 1; i < fields.length; i++) {
-            System.out.print("     " + fields[i].name + "       ");
+        //разделитель
+        System.out.print("---");
+        // выводим разделители по количеству столбцов
+        for (int j = 0; j < dimensionField; j++) {
+            System.out.print("--");
         }
+        //перевод на новую строку
         System.out.println();
-        for (int i = 1; i < fields.length; i++) {
-            System.out.print("  ");
-            for (char alphabet: alphabet) {
-                String s = " " + alphabet;
-                System.out.print(s.toUpperCase());
-            }
-            System.out.print(" ");
-        }
-        System.out.println();
-        for (int i = 0; i < dimensionField; i++) {
-            for (int k = 1; k < fields.length; k++) {
-                System.out.print(numberOfLine[i] + " ");
-                for (int j = 0; j < dimensionField; j++) {
-                    System.out.print(fields[k].cells[i][j] + " ");
-                }
-            }
-            System.out.println();
-        }
-        System.out.println("--------------------------------------------------------------------------------");
     }
 }
