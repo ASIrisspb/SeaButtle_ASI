@@ -16,12 +16,11 @@ package ASIris;
                                 (переделка механизма хранения кораблей)
     VersionConsole 5.20200723: размер поля задает игрок
     VersionConsole 5.20200729: стрельба ПК по возможным вариантам (добивание раненных)
+    VersionConsole 5.20200730: количество кораблей задает игрок
 
     @tasks
-    - количество кораблей задает игрок
-    ...
+    ... в другом проекте ))
     - перевод в графический вид (десктопный вариант)
-    ...
     - создание мобильного приложения (без сервера)
  */
 
@@ -35,6 +34,9 @@ public class Main {
     //в рамках одной игры набор игроков будет постоянный, поэтому можем использовать статическую переменную,
     // чтобы она была доступна в методах
     private static Field[] players;
+    //в рамках одной игры набор кораблей у всех одинаковый и задается пользователем, поэтому
+    //вводим перменную - массив кораблей
+    private static Ship[] listOfShipForGame;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +64,11 @@ public class Main {
             String name = "Компьютер_" + i;
             players[i] = new Field(name);
         }
+
+
+
+
+
 
         //выводим пустые поля
         Field.print("", players);
@@ -201,7 +208,7 @@ public class Main {
 
 //отладочная функция - меняем  positionPlayer == 0 на positionPlayer == -1, чтобы не заходить в эту ветку
 
-            if (positionPlayer == -1) {
+            if (positionPlayer == 0) {
                 //тригер цикла, когда игрок должен подтвердить свой выстрел
                 boolean wantShoot = true;
                 //делаем цикл, чтобы человек мог менять свой ход несколько раз
@@ -581,14 +588,14 @@ public class Main {
         }
     }
 
-//////////метод обратного перевода координаты в человеческое представление
+    //////////метод обратного перевода координаты в человеческое представление
     private static String translateToHumanIndex(Pair<Integer, Integer> step) {
         char column = Field.alphabet[step.getValue()];
         String line = String.valueOf(step.getKey()+1);
         return column + line;
     }
 
-//////////метод обрисовки попадания в корабль "ноликами" по углам
+    //////////метод обрисовки попадания в корабль "ноликами" по углам
     private static void noShoot(Pair<Integer, Integer> shoot, Field field) {
         //временные переменные, чтобы в одном цикле пройти по угловым координатам
         int a = -1;
@@ -616,7 +623,7 @@ public class Main {
         }
     }
 
-//////////метод дообрисовки потопленного корабля целиком (дорисовываем нолики)
+    //////////метод дообрисовки потопленного корабля целиком (дорисовываем нолики)
     private static void noShootShip(Pair<Integer, Integer> shoot, Field field) {
         //находим индекс корабля в списке
         int indexShip = field.findShip(shoot);
@@ -642,7 +649,7 @@ public class Main {
         }
     }
 
-//////////Метод для расстановки кораблей ПК. В метод передаем поле ПК, которое изменяется методом
+    //////////Метод для расстановки кораблей ПК. В метод передаем поле ПК, которое изменяется методом
     private static void fillFieldPC(Field fieldPC) {
         //делаем в цикле, так как нужно расставить 10 кораблей (в сумме 20 клеток)
         while (fieldPC.ships.size() < Field.countShips) {
@@ -665,7 +672,7 @@ public class Main {
         }
     }
 
-//////////РАЗМЕЩЕНИЕ КОРАБЛЯ
+    //////////РАЗМЕЩЕНИЕ КОРАБЛЯ
     private static void postingShip(Ship ship, Field fieldPC) {
         //массив кораблей для конечного выбора
         ArrayList<Ship> possibleShips = new ArrayList<>();
@@ -793,13 +800,13 @@ public class Main {
         }
     }
 
-//////////для проверки НЕ выхода за рамки поля. ИСТИНА, если внутри поля
+    //////////для проверки НЕ выхода за рамки поля. ИСТИНА, если внутри поля
     private static boolean validRange(Pair<Integer, Integer> step) {
         return (step.getKey() >= 0) && (step.getKey() < Field.dimensionField)
                 && (step.getValue() >= 0) && (step.getValue() < Field.dimensionField);
     }
 
-//////////Метод для расстановки кораблей игроком. В метод передаем поле игрока, которое изменяется методом
+    //////////Метод для расстановки кораблей игроком. В метод передаем поле игрока, которое изменяется методом
     private static void fillFieldUser(Field fieldUser) {
         //инструкция Расстановка.1
         System.out.println("Выбор расстановки: введите \"1\", если будете расставлять корабли самостоятельно, " +
@@ -833,7 +840,6 @@ public class Main {
                         //увеличиваем счетчик
                         k++;
                         System.out.println("Вы успешно ввели координаты " + k + "-го корабля.");
-                        System.out.println(fieldUser.ships.size());
                         Field.print(fieldUser);
                     }
                 }
@@ -878,7 +884,7 @@ public class Main {
         }
     }
 
-//////////метод размещения корабля на поле
+    //////////метод размещения корабля на поле
     private static void postingShipUser(Ship ship, Field fieldUser) {
         //логическая переменная допустимости (валидности) введенной координаты
         boolean validCoordinate = true;
@@ -1079,7 +1085,7 @@ public class Main {
         }
     }
 
-//////////метод утверждения выбранного варианта расстановки корабля
+    //////////метод утверждения выбранного варианта расстановки корабля
     private static void choosenVariant(ArrayList<Pair<Integer, Integer>> possibleSteps, Ship ship, Field field) {
         //переносим позиции из варианта в корабль
         possibleSteps.toArray(ship.positions);
@@ -1094,7 +1100,7 @@ public class Main {
         }
     }
 
-//////////метод, проверяющий допустимость выбора клетки при условии наличия других кораблей
+    //////////метод, проверяющий допустимость выбора клетки при условии наличия других кораблей
     private static boolean isValidCoordinateToShip(Pair<Integer, Integer> coordinate, Field field) {
         //если в данной клетке есть корабль, то возвращаем ЛОЖЬ и выход из метода
         if (field.cells[coordinate.getKey()][coordinate.getValue()].getStatus() == 2) return false;
@@ -1117,7 +1123,7 @@ public class Main {
         return true;
     }
 
-//////////метод, считывающий человеческую координату и переводящий ее в индексы массива клеток с проверкой
+    //////////метод, считывающий человеческую координату и переводящий ее в индексы массива клеток с проверкой
     private static Pair<Integer,Integer> readUserStep() {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         //цикл нужен для того, чтобы добиться от игрока правильного ввода
@@ -1138,7 +1144,7 @@ public class Main {
             }
         }
     }
-//////////метод выбора пользователем из диапазона цифр. Границы включаются.
+    //////////метод выбора пользователем из диапазона цифр. Границы включаются.
     public static int choiceFromRangeNumbers (int beginInterval, int endInterval) {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
