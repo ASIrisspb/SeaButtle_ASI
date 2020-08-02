@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="SeaButtle_ASI:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SeaButtle_ASI_jar</output-path>
+    <root id="archive" name="SeaButtle_ASI.jar">
+      <element id="module-output" name="SeaButtle_ASI" />
+    </root>
+  </artifact>
+</component>
