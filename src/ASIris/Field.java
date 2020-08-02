@@ -11,7 +11,7 @@ public class Field {
     //переменная размерности поля (по умолчанию = 10, но меняется в методе мейн)
     public static int dimensionField;
     static {
-        System.out.println("Теперь определите размер поля для игры (от 10х10 до 28х28) " +
+        System.out.println("В этой игре нужно задать размер поля для игры (от 10х10 (классика) до 28х28) " +
                 "- укажите количество клеток по одной стороне");
         // и устанавливаем значение размероности поля для всех полей
         dimensionField = Main.choiceFromRangeNumbers(10,28);
@@ -63,6 +63,11 @@ public class Field {
     public Cell[][] cells = new Cell[dimensionField][dimensionField];
     //переменная (поле класса) для учета сделанных выстрелов по данному полю в форме списка пар координат
     public ArrayList<Pair<Integer, Integer>> availableSteps = new ArrayList<>(dimensionField * dimensionField);
+
+    //список пар координат для упрощения расстановки кораблей компьютером
+    public ArrayList<Pair<Integer, Integer>> availableCoordinateForFillField = new ArrayList<>(dimensionField * dimensionField);
+
+
     // переменная для хранения клеток кораблей также в форме списка пар координат
     public ArrayList<Ship> ships = new ArrayList<>();
     //переменная для хранения имени поля (игрока или ПК)
@@ -82,9 +87,30 @@ public class Field {
                 cells[i][j] = new Cell();
                 //тут же заносим в переменную список пар координат данного поля
                 availableSteps.add(new Pair<>(i,j));
+                availableCoordinateForFillField.add(new Pair<>(i,j));
             }
         }
     }
+
+    //метод зачистки поля
+    public void erase() {
+        //очищаем список кораблей
+        this.ships.clear();
+        //очищаем список координат для расстановки
+        this.availableCoordinateForFillField.clear();
+        //проходим по всем клеткам поля
+        for (int i = 0; i < Field.dimensionField; i++) {
+            for (int j = 0; j < Field.dimensionField; j++) {
+                //воссоздаем список координат
+                this.availableCoordinateForFillField.add(new Pair<>(i,j));
+                //каждой клетке ставим исходный статус
+                this.cells[i][j].setStatus(1);
+                //каждой клетке ставим НЕвидимость
+                this.cells[i][j].visible = false;
+            }
+        }
+    }
+
 
     //метод поиска корабля по координате
     public int findShip (Pair<Integer, Integer> pair) {
@@ -107,25 +133,15 @@ public class Field {
         return -1;
     }
 
-
-
-    //метод удаления из списка доступных ходов для ПК availableSteps (пары координат). Используем для стрельбы ПК,
-    // чтобы не стрелял в одно и то же место
-    public void delFromAvailableSteps (Pair<Integer, Integer> pair) {
-        Iterator<Pair<Integer, Integer>> iterator = this.availableSteps.iterator();
+    //метод для удаления координат из списка (либо для списка возможных ходов,
+    // либо из списка координат для расстановки)
+    public void delFromAvailable (ArrayList<Pair<Integer, Integer>> list, Pair<Integer, Integer> pair) {
+        Iterator<Pair<Integer, Integer>> iterator = list.iterator();
         while (iterator.hasNext()) {
             Pair<Integer, Integer> nextPair = iterator.next();
             if ((nextPair.getKey().equals(pair.getKey())) && (nextPair.getValue().equals(pair.getValue()))) {
                 iterator.remove();
             }
-        }
-    }
-
-    //метод обнуления кораблей для данного поля. Используем при автоматической расстановке для игрока,
-    // когда он не согласен с предложенным вариантом расстановки
-    public void delFromShipsAll (Field field) {
-        for (int i = field.ships.size() - 1; i >= 0; i--) {
-            field.ships.remove(0);
         }
     }
 

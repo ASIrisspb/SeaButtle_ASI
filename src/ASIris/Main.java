@@ -35,10 +35,10 @@ public class Main {
     // чтобы она была доступна в методах
     private static Field[] players;
     //в рамках одной игры набор кораблей у всех одинаковый и задается пользователем, поэтому
-    //вводим перменную - массив кораблей
-    private static Ship[] listOfShipForGame;
+    //вводим перменную - компановка кораблей в виде списка
+    private static ArrayList<Ship> listOfShipForGame = new ArrayList<>();
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static void main(String[] args) {
 
@@ -65,10 +65,64 @@ public class Main {
             players[i] = new Field(name);
         }
 
+        //предлагаем определиться с кораблями
+        System.out.println("Количество и качество кораблей также нужно выбрать, " +
+                "либо оставить классическую компановку (4,3,3,2,2,2,1,1,1,1)");
+        System.out.println("Введите 1, если выбираете классическую схему, введите 2 - если " +
+                "будете сами определять каких кораблей и сколько будет в игре");
+        //в зависимости от значения заходим в одну или другую ветку
+        if (choiceFromRangeNumbers(1,2) == 1) {
+            System.out.println("Отлично. Компановка принята - в игре будет 10 кораблей (4,3,3,2,2,2,1,1,1,1)");
+            //цикл для создания классической компановки - 10 кораблей
+            //идем от самого большого (i - будет определять количество палуб)
+            for (int i = 4; i > 0; i--) {
+                //так чтобы количество палуб уменьшалось, а количество кораблей увеличивалось
+                for (int j = i - 1; j < 4; j++) {
+                    //создаем экземпляр корабля с заданным количеством палуб и заносим его в список
+                    listOfShipForGame.add(new Ship(i));
+                }
+            }
+        //иначе заходим сюда и пользователь определяет количество и качество кораблей для игры
+        } else {
+            //предупреждаем об ограничении
+            System.out.println("Важно! Количество клеток под корабли не должно " +
+                    "превышать 1/5 всех клеток поля (при округлении в меньшую сторону до целого).");
+            //переменная для определения количества клеток. Критерий работы цикла.
+            int countCellsForShips = (Field.dimensionField * Field.dimensionField) / 5;
 
+            while (countCellsForShips > 0) {
+                System.out.println("Введите ДЛИНУ КОРАБЛЯ (количество палуб) - " +
+                        "максимальная длина равна размеру поля, который вы указали ранее ("
+                        +Field.dimensionField+"). В наличии клеток для размещения: "+countCellsForShips);
+                //длина вводимых кораблей
+                int countOfdecks = choiceFromRangeNumbers(1,Field.dimensionField);
+                if (countOfdecks <= countCellsForShips) {
+                    //возможное количество кораблей при имеющемся количестве клеток и указанной длине корабля
+                    int countShipsCanBe = countCellsForShips / countOfdecks;
+                    System.out.println("Теперь введите количество таких кораблей. Не более " + countShipsCanBe);
+                    //считаем сколько кораблей можем создать
+                    int countCreateShips = choiceFromRangeNumbers(1, countShipsCanBe);
+                    //через цикл добавляем столько кораблей, сколько указал пользователь
+                    for (int i = 0; i < countCreateShips; i++) {
+                        listOfShipForGame.add(new Ship(countOfdecks));
+                    }
+                    System.out.println("Готово. Ваша компановка имеет кораблей: " + listOfShipForGame.size() +
+                            ". Вы использовали клеток поля: " + (countCreateShips * countOfdecks) + " . Осталось - "
+                            + (countCellsForShips - (countCreateShips * countOfdecks)));
 
+                    countCellsForShips = countCellsForShips - (countCreateShips * countOfdecks);
 
-
+                    if (countCellsForShips == 0) break;
+                    System.out.println("1 - закончить формирование компановки и перейти к игре. 2 - продолжить");
+                    if (choiceFromRangeNumbers(1,2) == 1) {
+                        countCellsForShips = 0;
+                    }
+                } else {
+                    System.out.println("Не хватает клеток для размещения хотя бы одного корабля указанной длины. " +
+                            "Попробуйте заново");
+                }
+            }
+        }
 
         //выводим пустые поля
         Field.print("", players);
@@ -141,7 +195,10 @@ public class Main {
                 for (Field field : players) {
                     System.out.print("У " + field.name + " осталось кораблей: " + field.ships.size() + ". (");
                     for (int i = 0; i < field.ships.size(); i++) {
-                        System.out.print(field.ships.get(i).decks + ", ");
+                        if (i > 0) {
+                            System.out.print(", ");
+                        }
+                        System.out.print(field.ships.get(i).decks );
                     }
                     System.out.println(")");
                 }
@@ -304,14 +361,17 @@ public class Main {
 
         //в условии метод, проверяющий наличие хотя бы одного поля с раненным кораблем
         //если проверка показала, что есть раненые корабли, то пытаемся их добить
-        if (checkHurt()) {
+        if (checkHurt(positionPlayer)) {
             //зайдем сюда, если есть хотя бы один раненный корабль
             // проходим по всем полям и заносим в список те, где есть раненные корабли
             ArrayList<Field> hasHurtFieldList = new ArrayList<>();
-            for (Field player : players) {
-                if (player.feildHasHurtShip) hasHurtFieldList.add(player);
+            for (int i = 0; i < players.length; i++) {
+                //пропускаем собственное поле
+                if (i != positionPlayer) {
+                    //если в поле есть раненный корабль, то заносим его в список
+                    if (players[i].feildHasHurtShip) hasHurtFieldList.add(players[i]);
+                }
             }
-
             //получаем случайно поле с раненным кораблем
             Field fieldByShoot = hasHurtFieldList.get((int) Math.random()*(hasHurtFieldList.size()));
 
@@ -473,11 +533,14 @@ public class Main {
     }
 
 //////////проверка наличия поля с раненным кораблем. Если есть хотя бы одно поле с раненным кораблем, то ИСТИНА
-    private static boolean checkHurt() {
+    private static boolean checkHurt(int positionPlayer) {
         //проходим по всем полям,
-        for (Field player : players) {
-            //если встретится хотя бы одно с раненным кораблем, то выходим из цикла и возвращаем ИСТИНА,
-            if (player.feildHasHurtShip) return true;
+        for (int i = 0; i < players.length; i++) {
+            //не рассматриваем собственное поле
+            if (i != positionPlayer) {
+                //если попалось поле с раненным кораблем, то выходим из метода со значением ИСТИНА
+                if (players[i].feildHasHurtShip) return true;
+            }
         }
         // иначе вернем ЛОЖЬ
         return false;
@@ -494,7 +557,7 @@ public class Main {
             //не забываем сделать ее видимой
             field.cells[shoot.getKey()][shoot.getValue()].visible = true;
             //а также убираем данный ход из списка возможных ходов в данном поле
-            field.delFromAvailableSteps(shoot);
+            field.delFromAvailable(field.availableSteps, shoot);
             //делаем обрисовку корабля
             noShoot(shoot, field);
 
@@ -558,7 +621,7 @@ public class Main {
             //а также не забываем сделать ее видимой
             field.cells[shoot.getKey()][shoot.getValue()].visible = true;
             //а также убираем данный ход из списка возможных ходов
-            field.delFromAvailableSteps(shoot);
+            field.delFromAvailable(field.availableSteps, shoot);
 
             //устанавливаем логическое "не может стрелять" так как выстрел сделан и попадания нет,
             // но если будет попадание по другому полю и будет снова ход этот параметр не будет
@@ -615,7 +678,7 @@ public class Main {
                     field.cells[key][value].setStatus(4);
                     //и убираем данную клетку из списка доступных ходов (для ПК)
                     Pair<Integer,Integer> pairTemp = new Pair<>(key,value);
-                    field.delFromAvailableSteps(pairTemp);
+                    field.delFromAvailable(field.availableSteps, pairTemp);
                     //а также не забываем сделать ее видимой
                     field.cells[key][value].visible = true;
                 }
@@ -639,7 +702,7 @@ public class Main {
                             field.cells[i][j].setStatus(4);
                             //и убираем данную клетку из списка доступных ходов (для ПК)
                             Pair<Integer,Integer> pairTemp = new Pair<>(i,j);
-                            field.delFromAvailableSteps(pairTemp);
+                            field.delFromAvailable(field.availableSteps, pairTemp);
                             //а также не забываем сделать ее видимой
                             field.cells[i][j].visible = true;
                         }
@@ -651,29 +714,29 @@ public class Main {
 
     //////////Метод для расстановки кораблей ПК. В метод передаем поле ПК, которое изменяется методом
     private static void fillFieldPC(Field fieldPC) {
-        //делаем в цикле, так как нужно расставить 10 кораблей (в сумме 20 клеток)
-        while (fieldPC.ships.size() < Field.countShips) {
-            //максимальное количество палуб
-            int countOfdecks = 4;
-            //счетчик для индекса кораблей
-            int k = 0;
-            //цикл для создания нужного количества кораблей
-            //идем от самого большого
-            for (int i = countOfdecks; i > 0; i--) {
-                //так чтобы количество палуб уменьшалось, а количество кораблей увеличивалось
-                for (int j = i - 1; j < countOfdecks; j++) {
-                    //создаем экземпляр корабля с заданным количеством палуб
-                    //размещаем его на поле через метод
-                    postingShip(new Ship(i), fieldPC);
-                    //увеличиваем счетчик
-                    k++;
+        //тригер для цикла, чтобы при появлении исключения запустить все заново
+        boolean replayFill = true;
+        while (replayFill) {
+            try {
+                //проходим по списку шаблона кораблей для игры и размещаем каждый корабль
+                for (Ship ship : listOfShipForGame) {
+                    //размещаем данный корабль через метод
+                    postingShip(ship,fieldPC);
+
                 }
+                //если цикл завершился без исключения, значит все корабли расставлены - выходим из цикла
+                replayFill = false;
+            } catch (IndexOutOfBoundsException e) {
+                //если появилось исключение, то зачищаем поле
+                fieldPC.erase();
+                //и ставим тригер на повторный запуск цикла (ИСТИНА)
+                replayFill = true;
             }
         }
     }
 
     //////////РАЗМЕЩЕНИЕ КОРАБЛЯ
-    private static void postingShip(Ship ship, Field fieldPC) {
+    private static void postingShip(Ship ship, Field fieldPC) throws IndexOutOfBoundsException {
         //массив кораблей для конечного выбора
         ArrayList<Ship> possibleShips = new ArrayList<>();
         //логический тригер цикла. Делаем ИСТИНА, чтобы зайти в цикл
@@ -688,9 +751,21 @@ public class Main {
             east = true;
             south = true;
             //случайное число, которое позовлит случайно получить координату из списка "человечески" координат
-            int randomCoordinate = (int) (Math.random() * (fieldPC.availableSteps.size() - 1));
-            //получаем пару (координаты) путем перевода из "человеческого" вида в индексы массива клеток
-            step = Field.translateTable.get(Field.allCoordinates.get(randomCoordinate));
+            int randomCoordinate = (int) (Math.random() * (fieldPC.availableCoordinateForFillField.size() - 1));
+
+            //для предотвращения варианта, когда расстановка будет неудачной и в итоге
+            // появится исключение IndexOutOfBoundsException
+            try {
+                //получаем пару (координаты) из списка допустимых координат для расстановки данного поля
+                step = fieldPC.availableCoordinateForFillField.get(randomCoordinate);
+            } catch (IndexOutOfBoundsException e) {
+                //если случилось исключение, то пробрасываем его выше! Метод при этом прекратит работу
+                throw new IndexOutOfBoundsException();
+            }
+
+            //удаляем выбранный ход из списка координат для расстановки
+            fieldPC.delFromAvailable(fieldPC.availableCoordinateForFillField,step);
+
             //проверяем допустима ли данная координата с учетом уже расставленных
             if (isValidCoordinateToShip(step, fieldPC)) {
                 //запускаем цикл для определения возможности пострения корабля во всех направлениях
@@ -870,15 +945,8 @@ public class Main {
                 isOK = choiceFromRangeNumbers(1, 2) == 2;
                 //если пользователь ввел 2, то есть НЕдоволен расстановкой, то обнуляаем результаты расстановки
                 if (isOK) {
-                    for (int i = 0; i < Field.dimensionField; i++) {
-                        for (int j = 0; j < Field.dimensionField; j++) {
-                            if (fieldUser.cells[i][j].getStatus() == 2) {
-                                fieldUser.cells[i][j].setStatus(1);
-                                fieldUser.cells[i][j].visible = false;
-                            }
-                        }
-                    }
-                    fieldUser.delFromShipsAll(fieldUser);
+                    //метод зачистки поля
+                    fieldUser.erase();
                 }
             } while (isOK);
         }
